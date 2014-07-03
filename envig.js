@@ -39,6 +39,15 @@ Environment.prototype.load = function (filepath, callback) {
     });
 };
 
+Environment.prototype.save = function (filepath, callback) {
+    var data = JSON.stringify(this.env);
+
+    fs.writeFile(filepath, data, function (err) {
+        if (callback)
+            callback(err, data);
+    });
+};
+
 Environment.prototype.get = function (key, def) {
     if (key === null || key === undefined)
         throw new Error('Invalid key');
