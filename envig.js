@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 function Environment(filepath) {
     this.env = {};
 
@@ -5,22 +7,37 @@ function Environment(filepath) {
         this.load(filepath);
 }
 
-Environment.prototype.load = function (filepath) {
-    var self = this
-      , env = require(filepath)
-      , keys = Object.keys(env);
-    
-    keys.forEach(function (key) {
-        if (typeof env[key] !== 'string')
+Environment.prototype.loadJSON = function (data) {
+    var env = JSON.parse(data)
+      , keys = Object.keys(env)
+      , l = keys.length
+      , i, k;
+
+    for (i = 0; i < l; ++i)
+        if (typeof env[keys[i]] !== 'string')
             throw new Error('Invalid value');
-    });
-    
-    keys.forEach(function (key) {
-        self.env[key] = env[key];
-    });
+
+    for (i = 0, k = keys[0]; i < l; ++i, k = keys[i])
+        this.env[k] = env[k];
 
     return keys;
-}
+};
+
+Environment.prototype.load = function (filepath, callback) {
+    var self = this;
+
+    fs.readFile(filepath, function (err, data) {
+        if (err !== null) {
+            callback(err, null);
+        }
+        else try {
+            callback(null, self.loadJSON(data));
+        }
+        catch (err) {
+            callback(err, null);
+        }
+    });
+};
 
 Environment.prototype.get = function (key, def) {
     if (key === null || key === undefined)
