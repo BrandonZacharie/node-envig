@@ -79,6 +79,10 @@ Environment.prototype.set = function (key, val) {
     this.env[key.toUpperCase()] = val;
 };
 
+Environment.prototype.keys = function () {
+    return Object.keys(this.env);
+};
+
 module.exports = {
     Environment: Environment
 };
