@@ -26,6 +26,12 @@ Environment.prototype.loadJSON = function (data) {
 Environment.prototype.load = function (filepath, callback) {
     var self = this;
 
+    if (arguments.length === 1) {
+        this.loadJSON(fs.readFileSync(filepath));
+
+        return;
+    }
+
     fs.readFile(filepath, function (err, data) {
         if (err !== null) {
             callback(err, null);
