@@ -67,15 +67,11 @@ describe('Environment', function () {
         });
     });
     describe('.load', function () {
-        it('fails when given a bad filepath', function (done) {
-            environment.load('//', function (err, loadedKeys) {
-                (err === null).should.be.false;
-                err.should.be.an.Error;
-                (loadedKeys === null).should.be.true;
-                done();
-            });
+        it('invoked without a callback loads a file synchronously', function () {
+            environment.load(filepath);
+            environment.keys().should.eql(keys);
         });
-        it('loads a file', function (done) {
+        it('invoked with a callback loads a file asynchronously', function (done) {
             environment.load(filepath, function (err, loadedKeys) {
                 (err === null).should.be.true;
                 (loadedKeys === null).should.be.false;
@@ -84,7 +80,13 @@ describe('Environment', function () {
                 done();
             });
         });
-        it('throws when given an invalid type', function () {
+        it('fails when given a bad filepath', function (done) {
+            environment.load('//', function (err, loadedKeys) {
+                (err === null).should.be.false;
+                err.should.be.an.Error;
+                (loadedKeys === null).should.be.true;
+                done();
+            });
             (function () { environment.load(undefined); }).should.throw();
             (function () { environment.load(null); }).should.throw();
             (function () { environment.load(true); }).should.throw();
