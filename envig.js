@@ -54,20 +54,42 @@ Environment.prototype.save = function (filepath, callback) {
     });
 };
 
-Environment.prototype.get = function (key, def) {
+Environment.prototype.get = function (key, def, type) {
     if (key === null || key === undefined)
         throw new Error('Invalid key');
 
     if (typeof key !== 'string')
         key = String(key);
 
-    return process.env.hasOwnProperty(key)
-        ? process.env[key]
-        : this.env.hasOwnProperty(key)
-            ? this.env[key]
-            : arguments.length < 2
-                ? null
-                : def;
+    var value;
+
+    if (process.env.hasOwnProperty(key))
+        value = process.env[key];
+    else if (this.env.hasOwnProperty(key))
+        value = this.env[key];
+    else if (arguments.length > 1)
+        value = def;
+    else
+        return null;
+        
+    if (arguments.length !== 3)
+        return value;
+
+    if (value === undefined || value === null)
+        return type === Number ? NaN : null;
+
+    switch (type) {
+        case Object:
+            return typeof value === 'string' ? JSON.parse(value) : value;
+        case Number:
+            return typeof value === 'object' ? NaN : Number(value);
+        case String:
+            return typeof value === 'object' ? JSON.stringify(value) : String(value);
+        case Function:
+            return typeof value === 'string' ? Function(value) : null;
+    }
+
+    return typeof type === 'function' ? type(value) : value;
 };
 
 Environment.prototype.set = function (key, val) {
