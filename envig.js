@@ -67,13 +67,12 @@ Environment.prototype.get = function (key, def, type) {
         value = process.env[key];
     else if (this.env.hasOwnProperty(key))
         value = this.env[key];
-    else if (arguments.length > 1)
-        value = def;
-    else
+    else if (arguments.length === 1)
         return null;
-        
-    if (arguments.length !== 3)
-        return value;
+    else if (arguments.length === 2)
+        return def;
+    else
+        value = def;
 
     if (value === undefined || value === null)
         return type === Number ? NaN : null;
