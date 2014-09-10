@@ -1,4 +1,5 @@
-var fs = require('fs');
+var fs = require('fs')
+  , BoolRegExp = /^true$|^yes$|^on$/i;
 
 function Environment(filepath) {
     this.env = {};
@@ -54,20 +55,43 @@ Environment.prototype.save = function (filepath, callback) {
     });
 };
 
-Environment.prototype.get = function (key, def) {
-    if (key === null || key === undefined)
+Environment.prototype.get = function (key, def, type) {
+    if (key == null)
         throw new Error('Invalid key');
 
     if (typeof key !== 'string')
         key = String(key);
 
-    return process.env.hasOwnProperty(key)
-        ? process.env[key]
-        : this.env.hasOwnProperty(key)
-            ? this.env[key]
-            : arguments.length < 2
-                ? null
-                : def;
+    var value;
+
+    if (process.env.hasOwnProperty(key))
+        value = process.env[key];
+    else if (this.env.hasOwnProperty(key))
+        value = this.env[key];
+    else if (arguments.length === 1)
+        return null;
+    else if (arguments.length === 2)
+        return def;
+    else
+        value = def;
+
+    if (value == null)
+        return type === Number ? NaN : type === Boolean ? false : null;
+
+    switch (type) {
+        case Object:
+            return typeof value === 'string' ? JSON.parse(value) : value;
+        case Number:
+            return typeof value === 'object' ? NaN : Number(value);
+        case String:
+            return typeof value === 'object' ? JSON.stringify(value) : String(value);
+        case Function:
+            return typeof value === 'string' ? Function(value) : null;
+        case Boolean:
+            return typeof value === 'string' ? isNaN(value) ? BoolRegExp.test(value) : Boolean(parseFloat(value)) : !!value;
+    }
+
+    return typeof type === 'function' ? type(value) : value;
 };
 
 Environment.prototype.set = function (key, val) {
