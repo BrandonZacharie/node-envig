@@ -1,4 +1,5 @@
-var fs = require('fs');
+var fs = require('fs')
+  , BoolRegExp = /^true$|^yes$|^on$/i;
 
 function Environment(filepath) {
     this.env = {};
@@ -55,7 +56,7 @@ Environment.prototype.save = function (filepath, callback) {
 };
 
 Environment.prototype.get = function (key, def, type) {
-    if (key === null || key === undefined)
+    if (key == null)
         throw new Error('Invalid key');
 
     if (typeof key !== 'string')
@@ -74,8 +75,8 @@ Environment.prototype.get = function (key, def, type) {
     else
         value = def;
 
-    if (value === undefined || value === null)
-        return type === Number ? NaN : null;
+    if (value == null)
+        return type === Number ? NaN : type === Boolean ? false : null;
 
     switch (type) {
         case Object:
@@ -86,6 +87,8 @@ Environment.prototype.get = function (key, def, type) {
             return typeof value === 'object' ? JSON.stringify(value) : String(value);
         case Function:
             return typeof value === 'string' ? Function(value) : null;
+        case Boolean:
+            return typeof value === 'string' ? isNaN(value) ? BoolRegExp.test(value) : Boolean(parseFloat(value)) : !!value;
     }
 
     return typeof type === 'function' ? type(value) : value;
