@@ -45,9 +45,81 @@ describe('Environment', function () {
         it('throws when invoked without arguments', function () {
             environment.get.should.throw();
         });
-        it('fetchs a value', function () {
+        it('returns a value', function () {
             keys.forEach(function (k) {
                 should(environment.get(k)).equal(env[k]);
+            });
+        });
+        describe('invoked with a type', function () {
+            var environment = new Environment;;
+
+            it('returns the value returned from a function when provided as the type', function () {
+                environment.get('FUNCTION', 123, function (v) { return v === 123; }).should.be.exactly(true);
+            });
+            it('returns a function when the type is Function', function () {
+                var f = environment.get('FUNCTION', 'return 123', Function);
+
+                f.should.be.a.Function;
+                f().should.be.exactly(123);
+            });
+            it('returns a number when the type is Number', function () {
+                environment.get('NUMBER', 123, Number).should.be.exactly(123);
+                environment.get('NUMBER', '123', Number).should.be.exactly(123);
+                environment.get('NUMBER', true, Number).should.be.exactly(1);
+                environment.get('NUMBER', false, Number).should.be.exactly(0);
+                environment.get('NUMBER', { foo: 'bar' }, Number).should.be.NaN;
+            });
+            it('returns a string when the type is String', function () {
+                environment.get('STRING', { foo: 'bar' }, String).should.eql('{"foo":"bar"}');
+                environment.get('STRING', ['foo', 'bar'], String).should.eql('["foo","bar"]');
+                environment.get('STRING', true, String).should.eql('true');
+                environment.get('STRING', 0, String).should.eql('0');
+            });
+            it('returns an object when the type is Object', function () {
+                environment.get('OBJECT', '{"foo":"bar"}', Object).should.eql({ foo: 'bar' });
+                environment.get('OBJECT', '["foo","bar"]', Object).should.eql(['foo', 'bar']);
+            });
+            it('returns a boolean when the type is Boolean', function () {
+                environment.get('BOOLEAN', true, Boolean).should.be.exactly(true);
+                environment.get('BOOLEAN', false, Boolean).should.be.exactly(false);
+
+                //return a 'truthy' value as true
+                environment.get('BOOLEAN', {}, Boolean).should.be.exactly(true);
+                environment.get('BOOLEAN', [], Boolean).should.be.exactly(true);
+
+                //return a 'falsey' value as false
+                environment.get('BOOLEAN', null, Boolean).should.be.exactly(false);
+                environment.get('BOOLEAN', undefined, Boolean).should.be.exactly(false);
+
+                //'true', 'yes', and 'on' return true
+                environment.set('BOOLEAN', 'true');
+                environment.get('BOOLEAN', false, Boolean).should.be.exactly(true);
+                environment.set('BOOLEAN', 'yes');
+                environment.get('BOOLEAN', false, Boolean).should.be.exactly(true);
+                environment.set('BOOLEAN', 'on');
+                environment.get('BOOLEAN', false, Boolean).should.be.exactly(true);
+
+                //strings representing numbers === 0 return false
+                environment.set('BOOLEAN', '0');
+                environment.get('BOOLEAN', true, Boolean).should.be.exactly(false);
+                environment.set('BOOLEAN', '00000000');
+                environment.get('BOOLEAN', true, Boolean).should.be.exactly(false);
+
+                //strings representing numbers !== 0 return true
+                environment.set('BOOLEAN', '1');
+                environment.get('BOOLEAN', false, Boolean).should.be.exactly(true);
+                environment.set('BOOLEAN', '-1');
+                environment.get('BOOLEAN', false, Boolean).should.be.exactly(true);
+                environment.set('BOOLEAN', '0.1');
+                environment.get('BOOLEAN', false, Boolean).should.be.exactly(true);
+                environment.set('BOOLEAN', '123456789');
+                environment.get('BOOLEAN', false, Boolean).should.be.exactly(true);
+
+                //random strings (i.e. 'asdf', 'false') return false
+                environment.set('BOOLEAN', 'false');
+                environment.get('BOOLEAN', true, Boolean).should.be.exactly(false);
+                environment.set('BOOLEAN', 'ujelly');
+                environment.get('BOOLEAN', true, Boolean).should.be.exactly(false);
             });
         });
     });
