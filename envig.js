@@ -1,118 +1,136 @@
-var fs = require('fs')
-  , BoolRegExp = /^true$|^yes$|^on$/i;
+'use strict';
 
-function Environment(filepath) {
-    this.env = {};
+const fs = require('fs');
+const BoolRegExp = /^true$|^yes$|^on$/i;
 
-    if (arguments.length)
-        this.load(filepath);
-}
+class Environment {
+  constructor(filepath) {
+    this.env = Object.create(null);
 
-Environment.prototype.loadJSON = function (data) {
-    var env = JSON.parse(data)
-      , keys = Object.keys(env)
-      , l = keys.length
-      , i, k;
+    if (arguments.length) {
+      this.load(filepath);
+    }
+  }
 
-    for (i = 0; i < l; ++i)
-        if (typeof env[keys[i]] !== 'string')
-            throw new Error('Invalid value');
+  loadJSON(data) {
+    const env = JSON.parse(data);
+    const keys = Object.keys(env);
 
-    for (i = 0, k = keys[0]; i < l; ++i, k = keys[i])
-        this.env[k] = env[k];
-
-    return keys;
-};
-
-Environment.prototype.load = function (filepath, callback) {
-    var self = this;
-
-    if (arguments.length === 1) {
-        this.loadJSON(fs.readFileSync(filepath));
-
-        return;
+    for (let k of keys) {
+      if (typeof env[k] !== 'string') {
+        throw new Error(`value for key "${k}" must be a String`);
+      }
     }
 
-    fs.readFile(filepath, function (err, data) {
-        if (err !== null) {
-            callback(err, null);
-        }
-        else try {
-            callback(null, self.loadJSON(data));
-        }
-        catch (err) {
-            callback(err, null);
-        }
+    for (let k of keys) {
+      this.env[k] = env[k];
+    }
+
+    return keys;
+  }
+
+  load(filepath, callback) {
+    if (arguments.length === 1) {
+      this.loadJSON(fs.readFileSync(filepath));
+
+      return;
+    }
+
+    fs.readFile(filepath, (err, data) => {
+      if (err !== null) {
+        callback(err, null);
+
+        return;
+      }
+
+      try {
+        callback(null, this.loadJSON(data));
+      }
+      catch (err) {
+        callback(err, null);
+      }
     });
-};
+  }
 
-Environment.prototype.save = function (filepath, callback) {
-    var data = JSON.stringify(this.env);
+  save(filepath, callback) {
+    const data = JSON.stringify(this.env);
 
-    fs.writeFile(filepath, data, function (err) {
-        if (callback)
-            callback(err, data);
+    fs.writeFile(filepath, data, (err) => {
+      if (callback) {
+        callback(err, data);
+      }
     });
-};
+  }
 
-Environment.prototype.get = function (key, def, type) {
-    if (key == null)
-        throw new Error('Invalid key');
+  get(key, def, type) {
+    if (key == null) {
+      throw new Error('key cannot be null');
+    }
 
-    if (typeof key !== 'string')
-        key = String(key);
+    if (typeof key !== 'string') {
+      key = String(key);
+    }
 
-    var value;
+    let value;
 
-    if (process.env.hasOwnProperty(key))
-        value = process.env[key];
-    else if (this.env.hasOwnProperty(key))
-        value = this.env[key];
-    else if (arguments.length === 1)
-        return null;
-    else if (arguments.length === 2)
-        return def;
-    else
-        value = def;
+    if (process.env.hasOwnProperty(key)) {
+      value = process.env[key];
+    }
+    else if (key in this.env) {
+      value = this.env[key];
+    }
+    else if (arguments.length === 1) {
+      return null;
+    }
+    else if (arguments.length === 2) {
+      return def;
+    }
+    else {
+      value = def;
+    }
 
-    if (value == null)
-        return type === Number ? NaN : type === Boolean ? false : null;
+    if (value == null) {
+      return type === Number ? NaN : type === Boolean ? false : null;
+    }
 
     switch (type) {
-        case Object:
-            return typeof value === 'string' ? JSON.parse(value) : value;
-        case Number:
-            return typeof value === 'object' ? NaN : Number(value);
-        case String:
-            return typeof value === 'object' ? JSON.stringify(value) : String(value);
-        case Function:
-            return typeof value === 'string' ? Function(value) : null;
-        case Boolean:
-            return typeof value === 'string' ? isNaN(value) ? BoolRegExp.test(value) : Boolean(parseFloat(value)) : !!value;
+      case Object:
+        return typeof value === 'string' ? JSON.parse(value) : value;
+      case Number:
+        return typeof value === 'object' ? NaN : Number(value);
+      case String:
+        return typeof value === 'object' ? JSON.stringify(value) : String(value);
+      case Function: // jshint -W061
+        return typeof value === 'string' ? Function(value) : null;
+      case Boolean:
+        return typeof value === 'string' ? isNaN(value) ? BoolRegExp.test(value) : Boolean(parseFloat(value)) : !!value;
     }
 
     return typeof type === 'function' ? type(value) : value;
-};
+  }
 
-Environment.prototype.set = function (key, val) {
-    if (key === null || key === undefined)
-        throw new Error('Invalid key');
-    
-    if (typeof key !== 'string')
-        key = String(key);
+  set(key, val) {
+    if (key == null) {
+      throw new Error('key cannot be null');
+    }
 
-    if (val === null || val === undefined)
-        val = '';
-    else if (typeof val !== 'string')
-        val = String(val);
+    if (typeof key !== 'string') {
+      key = String(key);
+    }
+
+    if (val == null) {
+      val = '';
+    }
+    else if (typeof val !== 'string') {
+      val = String(val);
+    }
 
     this.env[key.toUpperCase()] = val;
-};
+  }
 
-Environment.prototype.keys = function () {
+  keys() {
     return Object.keys(this.env);
-};
+  }
+}
 
-module.exports = {
-    Environment: Environment
-};
+module.exports = { Environment };

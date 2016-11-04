@@ -1,25 +1,25 @@
 {
   "name": "envig",
   "description": "Manage environment variables.",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "author": {
     "name": "Brandon Zacharie",
-    "email": "brandon.zacharie@pilcrow.co"
+    "email": "brandon.zacharie@gmail.com"
   },
   "engines": {
-    "node": "0.x"
+    "node": ">=4.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/PilcrowCo/node-envig.git"
+    "url": "https://github.com/BrandonZacharie/node-envig.git"
   },
   "keywords": ["manage", "process", "environment", "variables"],
   "scripts": {
-    "test": "./node_modules/.bin/mocha --bail --reporter list test.js"
+    "test": "./node_modules/.bin/mocha --bail --reporter list test"
   },
   "main": "./envig.js",
   "devDependencies": {
-    "mocha": "1.x",
-    "should": "4.x"
+    "chai": "^3.5.0",
+    "mocha": "^3.1.2"
   }
 }
