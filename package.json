@@ -19,7 +19,7 @@
   },
   "main": "./envig.js",
   "devDependencies": {
-    "mocha": "1.x",
-    "should": "4.x"
+    "chai": "^3.5.0",
+    "mocha": "1.x"
   }
 }
