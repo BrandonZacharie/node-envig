@@ -1,11 +1,17 @@
 'use strict';
 
 const fs = require('fs');
-const chai = require('chai')
+const chai = require('chai');
+const mocha = require('mocha');
 const envig = require('./envig');
+const describe = mocha.describe;
+const it = mocha.it;
+const after = mocha.after;
 const expect = chai.expect;
 const Environment = envig.Environment;
 
+// jshint -W030
+// jshint -W071
 describe('Environment', () => {
   const filepath = './test.json';
   const env = { FOO: 'bar', BAR: 'foo' };
@@ -52,13 +58,13 @@ describe('Environment', () => {
       }
     });
     describe('invoked with a type', () => {
-      var environment = new Environment();
+      const environment = new Environment();
 
       it('returns the value returned from a function when provided as the type', () => {
         expect(environment.get('FUNCTION', 123, (v) => v === 123)).to.equal(true);
       });
       it('returns a function when the type is Function', () => {
-        var f = environment.get('FUNCTION', 'return 123', Function);
+        const f = environment.get('FUNCTION', 'return 123', Function);
 
         expect(f).to.be.a('function');
         expect(f()).to.equal(123);
@@ -157,6 +163,7 @@ describe('Environment', () => {
       expect(() => environment.load(null)).to.throw();
       expect(() => environment.load(true)).to.throw();
       expect(() => environment.load(0)).to.throw();
+      expect(() => environment.load('')).to.throw();
       environment.load('//', (err, loadedKeys) => {
         expect(err).to.be.an('error');
         expect(loadedKeys).to.equal(null);
