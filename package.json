@@ -15,7 +15,7 @@
   },
   "keywords": ["manage", "process", "environment", "variables"],
   "scripts": {
-    "test": "./node_modules/.bin/mocha --bail --reporter list test.js"
+    "test": "./node_modules/.bin/mocha --bail --reporter list test"
   },
   "main": "./envig.js",
   "devDependencies": {
