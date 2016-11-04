@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/PilcrowCo/node-envig.git"
+    "url": "https://github.com/BrandonZacharie/node-envig.git"
   },
   "keywords": ["manage", "process", "environment", "variables"],
   "scripts": {
