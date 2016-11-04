@@ -30,6 +30,10 @@ class Environment {
   }
 
   load(filepath, callback) {
+    if (typeof filepath !== 'string') {
+      throw new Error('filepath must be a String');
+    }
+    
     if (arguments.length === 1) {
       this.loadJSON(fs.readFileSync(filepath));
 

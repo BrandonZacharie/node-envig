@@ -163,6 +163,7 @@ describe('Environment', () => {
       expect(() => environment.load(null)).to.throw();
       expect(() => environment.load(true)).to.throw();
       expect(() => environment.load(0)).to.throw();
+      expect(() => environment.load('')).to.throw();
       environment.load('//', (err, loadedKeys) => {
         expect(err).to.be.an('error');
         expect(loadedKeys).to.equal(null);
