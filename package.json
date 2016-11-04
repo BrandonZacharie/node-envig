@@ -20,6 +20,6 @@
   "main": "./envig.js",
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "1.x"
+    "mocha": "^3.1.2"
   }
 }
