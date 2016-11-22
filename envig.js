@@ -12,30 +12,35 @@ class Environment {
     }
   }
 
-  loadJSON(data) {
-    const env = JSON.parse(data);
+  merge(env) {
+    if (env instanceof Buffer) {
+      env = env.toString();
+    }
+    
+    if (typeof env === 'string') {
+      env = JSON.parse(env);
+    }
+
     const keys = Object.keys(env);
 
     for (let k of keys) {
       if (typeof env[k] !== 'string') {
-        throw new Error(`value for key "${k}" must be a String`);
+        throw new Error(`value for key "${k}" must be a string`);
       }
     }
 
-    for (let k of keys) {
-      this.env[k] = env[k];
-    }
+    Object.assign(this.env, env);
 
     return keys;
   }
 
   load(filepath, callback) {
     if (typeof filepath !== 'string') {
-      throw new Error('filepath must be a String');
+      throw new Error('filepath must be a string');
     }
-    
+
     if (arguments.length === 1) {
-      this.loadJSON(fs.readFileSync(filepath));
+      this.merge(fs.readFileSync(filepath));
 
       return;
     }
@@ -48,7 +53,7 @@ class Environment {
       }
 
       try {
-        callback(null, this.loadJSON(data));
+        callback(null, this.merge(data));
       }
       catch (err) {
         callback(err, null);
