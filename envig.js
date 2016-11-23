@@ -4,6 +4,7 @@ const fs = require('fs');
 const BoolRegExp = /^true$|^yes$|^on$/i;
 
 class Environment {
+
   constructor(filepath) {
     this.env = Object.create(null);
 
@@ -13,12 +14,20 @@ class Environment {
   }
 
   merge(env) {
-    if (env instanceof Buffer) {
+    if (env instanceof Environment) {
+      env = env.env;
+    }
+
+    if (Buffer.isBuffer(env)) {
       env = env.toString();
     }
-    
+
     if (typeof env === 'string') {
       env = JSON.parse(env);
+    }
+
+    if (env == null) {
+      env = Object.create(null);
     }
 
     const keys = Object.keys(env);
